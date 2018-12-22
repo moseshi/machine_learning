@@ -12,6 +12,10 @@ pillow = "*"
 tensorflow = "*"
 keras = "*"
 "boto3" = "*"
+pandas = "*"
+matplotlib = "*"
+keras-adversarial = "*"
+image-utils = "*"
 
 [dev-packages]
 
