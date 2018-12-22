@@ -94,3 +94,4 @@ trainer = Trainer(model, loss="categorical_crossentropy",
                   optimizer=RMSprop())
 trainer.train(x_train, y_train, batch_size=128, epochs=12, validation_split=0.2)
 score = model.evaluate(x_test, y_test, verbose=0)
+models = [model]

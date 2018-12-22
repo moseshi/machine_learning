@@ -5,7 +5,7 @@ from datetime import datetime
 
 start = datetime.now()
 
-from cipher10 import score, models
+from gan import score, models
 
 end = datetime.now()
 
