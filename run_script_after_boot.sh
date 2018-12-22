@@ -1,5 +1,7 @@
 #!/bin/bash
-# ここは適当に置き換えて
+# chkconfig: 4 99 20
+# description: date logging
+# processname: date_logging
 pushd /home/ec2-user/machine_learning
     git fetch origin develop
     git checkout develop
