@@ -7,8 +7,7 @@ pushd $TARGET_PATH
     git fetch origin develop
     git checkout develop
     git pull origin develop
-    pipenv install
-    pipenv run python main.py
+    cat version > result
 popd
 if [[ ! -f $TARGET_PATH/blocking_file ]]; then
     shutdown
