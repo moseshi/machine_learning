@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib as mpl
 import keras.backend as K
-from keras.layers import Flatten, Dropout, LeakyReLU, Input, Activation, Dense, BatchNormalization
+from keras.layers import Flatten, Dropout, LeakyReLU, Input, Activation, Dense, BatchNormalization, Reshape, UpSampling2D
 from keras.models import Model
 from keras.optimizers import Adam
 from keras.callbacks import TensorBoard
@@ -23,61 +23,6 @@ from keras_adversarial.image_grid_callback import ImageGridCallback
 from keras_adversarial import AdversarialModel, simple_gan, gan_targets
 from keras_adversarial import AdversarialOptimizerSimultaneous, normal_latent_sampling
 from image_utils import dim_ordering_fix, dim_ordering_input, dim_ordering_reshape, dim_ordering_unfix
-
-
-def generator_model():
-    model = Sequential()
-    model.add(Dense(1024, input_shape=(100, ), activation="tanh"))
-    model.add(Dense(128 * 7 * 7))
-    model.add(BatchNormalization())
-    model.add(Activation("tanh"))
-    model.add(Reshape((7, 7, 128), input_shape=(7 * 7 * 128, )))
-    model.add(UpSampling2D(size=(2, 2)))
-    model.add(Conv2D(64, (5, 5),
-                     padding="same",
-                     activation="tanh",
-                     data_format="channels_last"))
-    model.add(UpSampling2D(size=(2, 2)))
-    model.add(Conv2D(1, (5, 5),
-                     padding="same",
-                     activation="tanh",
-                     data_format="channels_last"))
-    return model
-
-
-def discriminator_model():
-    model = Sequential()
-    model.add(Conv2D(64, (5, 5),
-                     padding="same",
-                     input_shape=(28, 28, 1),
-                     activation="tanh",
-                     data_format="channels_last"))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Conv2D(128, (5, 5),
-                     activation="tanh",
-                     data_format="channels_last"))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Flatten())
-    model.add(Dense(1024, activation="tanh"))
-    model.add(Dense(1, activation="sigmoid"))
-    return model
-
-adversal_model = AdversarialModel(base_model=M,
-                                  player_params=[generator.trainable_weights,
-                                                 discriminator.trainable_weights],
-                                  player_names=["generator", "discriminator"])
-adversal_model = AdversarialModel(player_models=[gan_g, gan_d],
-                                  player_params=[generator.trainable_weights,
-                                                 discriminator.trainable_weights],
-                                  player_names=["generator", "discriminator"])
-mpl.use("Agg")
-
-def gan_targets(n):
-    generator_fake = np.ones((n, 1))
-    generator_real = np.zeros((n, 1))
-    discriminator_fake = np.zeros((n, 1))
-    discriminator_real = np.ones((n, 1))
-    return [generator_fake, generator_real, discriminator_fake, discriminator_real]
 
 def model_generator():
     nch = 256
@@ -126,8 +71,14 @@ def mnist_process(x):
     return x
 
 def mnist_data():
-    (x_train, y_train), (xtest, ytest) = mnist.load_data()
-    return mnist_process(xtrain), mnist_process(xtest)
+    (x_train, y_train), (x_test, y_test) = mnist.load_data()
+    return mnist_process(x_train), mnist_process(x_test)
+
+def generator_sampler():
+    xpred = generator.predict(zsamples)
+    xpred = dim_ordering_unfix(xpred.transpose((0, 2, 3, 1)))
+    return xpred.reshape((10, 10) + xpred.shape[1:])
+
 
 latent_dim = 100
 input_shape = (1, 28, 28)
@@ -138,6 +89,12 @@ generator.summary()
 discriminator.summary()
 gan.summary()
 
+path="output/gan_convolutional/"
+generator_cb = ImageGridCallback(
+    os.path.join(path, "epoch-{:03d}.png"),
+    generator_sampler, cmap=None
+)
+
 model = AdversarialModel(base_model=gan,
                          player_params=[generator.trainable_weights,
                                         discriminator.trainable_weights],
@@ -146,30 +103,32 @@ model = AdversarialModel(base_model=gan,
 model.adversarial_compile(
     adversarial_optimizer=AdversarialOptimizerSimultaneous(),
     player_optimizers=[Adam(1e-4, decay=1e-4),
-                       Adam(1e-3, decay=1e-4)]
-)
+                       Adam(1e-3, decay=1e-4)],
+    loss="binary_crossentropy")
 
-generator_cb = ImageGridCallback("output/gan_convolutional/epoch-{:03d}.png",
-                                 generator_sampler(latent_dim,
-                                                   generator))
-callbacks = [generator_cb]
+callbacks = []
+callbacks.append(generator_cb)
 if K.backend() == "tensorflow":
     callbacks.append(
         TensorBoard(log_dir=os.path.join("output/gan_convolutional/", "logs/"),
                     histogram_freq=0,
                     write_graph=True,
                     write_images=True))
+
+
 xtrain, xtest = mnist_data()
-xtrain = dim_ordering_fix(xtrain.reshape((-1, 1, 28, 28)))
-xtest = dim_ordering_fix(xtest.reshape((-1, 1, 28, 28)))
-y = gan_targets(xtrain.shape[0])
-history = model.fit(x=xtrain, y=y, validation_data=(xtest, ytest),
-                    callbacks=[generator_cb], epochs=100,
-                    batch_size=32)
+xtrain = dim_ordering_fix(xtrain.reshape((-1, 1, 28, 28)))[:10]
+xtest = dim_ordering_fix(xtest.reshape((-1, 1, 28, 28)))[:10]
+ytrain = gan_targets(xtrain.shape[0])
+ytest = gan_targets(xtest.shape[0])
+history = model.fit(x=xtrain, y=ytrain, validation_data=(xtest, ytest),
+                    callbacks=callbacks, epochs=100,
+                    batch_size=64)
 df = pd.DataFrame(history.history)
 df.to_csv("output/gan_convolutional/history.csv")
-generator.save("output/gan_convolutional/generator.h5")
-discriminator.save("output/gan_convolutional/discriminator.h5")
+
 models = {}
 models["generator"] = generator
 models["discriminator"] = discriminator
+
+score=(None, None)

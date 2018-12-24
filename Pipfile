@@ -9,13 +9,11 @@ scipy = "*"
 scikit-learn = "*"
 pillow = "*"
 "h5py" = "*"
-keras = "*"
+keras = "===2.1.2"
 "boto3" = "*"
 pandas = "*"
 matplotlib = "*"
-keras-adversarial = "*"
-image-utils = "*"
-tensorflow-gpu = "*"
+tensorflow = "*"
 
 [dev-packages]
 

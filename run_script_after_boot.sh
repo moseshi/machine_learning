@@ -2,11 +2,14 @@
 # chkconfig: 4 99 20
 # description: date logging
 # processname: date_logging
-pushd /home/ec2-user/machine_learning
+TARGET_PATH=/home/ec2-user/machine_learning
+pushd $TARGET_PATH
     git fetch origin develop
     git checkout develop
     git pull origin develop
     pipenv install
     pipenv run python main.py
 popd
-shutdown
+if [[ ! -f $TARGET_PATH/blocking_file ]]; then
+    shutdown
+fi
