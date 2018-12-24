@@ -9,4 +9,9 @@ pushd $TARGET_PATH
     git checkout develop
     git pull origin develop
     cat version > result2
+    if [[ ! -f $TARGET_PATH/blocking_file ]]; then
+	echo "blocking file not found" >> result2
+    else
+	echo "blocking file found" >> result2
+    fi
 popd
