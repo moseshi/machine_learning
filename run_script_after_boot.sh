@@ -7,7 +7,7 @@ pushd $TARGET_PATH
     git fetch origin develop
     git checkout develop
     git pull origin develop
-    cat version > result
+    cat version > result2
 popd
 if [[ ! -f $TARGET_PATH/blocking_file ]]; then
     shutdown
