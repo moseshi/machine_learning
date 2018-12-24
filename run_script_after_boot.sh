@@ -5,6 +5,7 @@
 TARGET_PATH=/home/ec2-user/machine_learning
 LOG_PATH=/home/ec2-user/log
 HOME=/home/ec2-user
+COMMANDS=<<EOF
 pushd $TARGET_PATH
     git fetch origin develop 2>&1 >> $LOG_PATH
     git checkout develop 2>&1 >> $LOG_PATH
@@ -16,3 +17,5 @@ pushd $TARGET_PATH
 	echo "blocking file found" >> result2
     fi
 popd
+EOF
+sudo -u ec2-user $COMMANDS
