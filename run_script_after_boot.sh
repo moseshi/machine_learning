@@ -4,7 +4,6 @@
 # processname: date_logging
 TARGET_PATH=/home/ec2-user/machine_learning
 LOG_PATH=/home/ec2-user/log
-su - ec2-user
 HOME=/home/ec2-user
 pushd $TARGET_PATH
     git fetch origin develop 2>&1 >> $LOG_PATH
