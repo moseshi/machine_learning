@@ -9,6 +9,3 @@ pushd $TARGET_PATH
     git pull origin develop
     cat version > result2
 popd
-if [[ ! -f $TARGET_PATH/blocking_file ]]; then
-    shutdown
-fi
