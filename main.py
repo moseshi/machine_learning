@@ -11,6 +11,10 @@ end = datetime.now()
 
 result_dir = "./result/"
 
+result_dir_path = Path(result_dir)
+if not result_dir_path.exists():
+    result_dir_path.mkdir(0o775, True)
+
 for model_name, model_obj in models.items():
     model_obj.save("{}/{}".format(result_dir, model_name))
 result_path = "result.txt".format(datetime.now())
