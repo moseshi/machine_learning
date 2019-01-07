@@ -128,6 +128,8 @@ def example_gan(adversarial_optimizer, path, opt_g, opt_d, nb_epoch, generator, 
     discriminator.save(os.path.join(path, "discriminator.h5"))
 
 
+models = {}
+score = [100,100]
 def main():
     # z \in R^100
     latent_dim = 100
@@ -139,9 +141,10 @@ def main():
     example_gan(AdversarialOptimizerSimultaneous(), "output/gan-cifar10",
                 opt_g=Adam(1e-4, decay=1e-5),
                 opt_d=Adam(1e-3, decay=1e-5),
-                nb_epoch=100, generator=generator, discriminator=discriminator,
+                nb_epoch=50, generator=generator, discriminator=discriminator,
                 latent_dim=latent_dim)
-
+    models["generator"] = generator
+    models["discriminator"] = discriminator
 
 if __name__ == "__main__":
     main()

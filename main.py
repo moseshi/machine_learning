@@ -5,7 +5,7 @@ from datetime import datetime
 
 start = datetime.now()
 
-from gan import score, models
+from example_gan_cifar10 import score, models
 
 end = datetime.now()
 
