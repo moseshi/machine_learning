@@ -21,7 +21,7 @@ result_path = "result.txt".format(datetime.now())
 with open("{}/{}".format(result_dir, result_path), "w") as f:
     f.write("Test loss:{}".format(score[0]))
     f.write("Test accuracy:{}".format(score[1]))
-    f.write("Run time: {}".format(end - start).seconds)
+    f.write("Run time: {}".format((end - start).seconds)
 s3 = boto3.resource("s3")
 bucket_name = "machine-learning"
 bucket = s3.Bucket(bucket_name)
