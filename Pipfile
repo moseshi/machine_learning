@@ -13,7 +13,7 @@ keras = "===2.1.2"
 "boto3" = "*"
 pandas = "*"
 matplotlib = "*"
-tensorflow = "*"
+tensorflow-gpu = "*"
 
 [dev-packages]
 

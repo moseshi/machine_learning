@@ -24,6 +24,14 @@ from keras_adversarial import AdversarialModel, simple_gan, gan_targets
 from keras_adversarial import AdversarialOptimizerSimultaneous, normal_latent_sampling
 from image_utils import dim_ordering_fix, dim_ordering_input, dim_ordering_reshape, dim_ordering_unfix
 
+def cifar10_process(x):
+    x = x.astype(np.float32) / 255.0
+    return x
+
+def cifar10_data():
+    (xtrain, ytrain), (xtest, ytest) = cifar10.load_data()
+    return cifar10_process(xtrain), cifar10_process(xtest)
+
 def model_generator():
     nch = 256
     g_input = Input(shape=[100])
@@ -74,13 +82,14 @@ def mnist_data():
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
     return mnist_process(x_train), mnist_process(x_test)
 
+latent_dim = 100
+zsamples = np.random.normal(size=(10 * 10, latent_dim))
 def generator_sampler():
     xpred = generator.predict(zsamples)
     xpred = dim_ordering_unfix(xpred.transpose((0, 2, 3, 1)))
     return xpred.reshape((10, 10) + xpred.shape[1:])
 
 
-latent_dim = 100
 input_shape = (1, 28, 28)
 generator = model_generator()
 discriminator = model_discriminator(input_shape=input_shape)
@@ -116,9 +125,7 @@ if K.backend() == "tensorflow":
                     write_images=True))
 
 
-xtrain, xtest = mnist_data()
-xtrain = dim_ordering_fix(xtrain.reshape((-1, 1, 28, 28)))[:10]
-xtest = dim_ordering_fix(xtest.reshape((-1, 1, 28, 28)))[:10]
+xtrain, xtest = cifar10_data()
 ytrain = gan_targets(xtrain.shape[0])
 ytest = gan_targets(xtest.shape[0])
 history = model.fit(x=xtrain, y=ytrain, validation_data=(xtest, ytest),
