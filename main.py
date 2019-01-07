@@ -30,5 +30,5 @@ upload_dir = date.strftime("%y-%m-%d-%H-%M-%S")
 for p in Path("./result").iterdir():
     if p.is_dir():
         continue
-    bucket.upload(model_path,"{}/{}".format(upload_dir, str(p)))
+    bucket.upload_file(model_path,"{}/{}".format(upload_dir, str(p)))
     p.unlink()
